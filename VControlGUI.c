@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.
 
 #define WINDOW_WIDTH 640
 #define WINDOW_TITLE (unsigned int)"VControlGUI"
+#define KICKSTART_PATH (unsigned int)"Devs:Kickstarts"
 
 #define MAXBUTTONS 13
 #define MAXLABELS 9
@@ -160,7 +161,7 @@ void kickstartSelector()
                      ASLFR_InitialTopEdge, 20,
                      ASLFR_InitialWidth, 300,
                      ASLFR_InitialHeight, 350,
-                     ASLFR_InitialDrawer, (unsigned int)"Sys:Work",
+                     ASLFR_InitialDrawer, KICKSTART_PATH,
                      ASLFR_InitialPattern, (unsigned int)"#?",
                      ASLFR_PositiveText, (unsigned int)"Open",
                      TAG_END))
