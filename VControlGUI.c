@@ -31,11 +31,16 @@ Boston, MA 02111-1307, USA.
 #include <stdio.h>
 #include <string.h>
 
-#define WINDOW_WIDTH 420
+
+#define DEBUG 0
+
+#define WINDOW_WIDTH 640
 #define WINDOW_TITLE (unsigned int)"VControlGUI"
 
-#define MAXBUTTONS 8
-#define MAXLABELS 3
+#define MAXBUTTONS 13
+#define MAXLABELS 9
+
+#define VREG_FASTIDE    0xdd1020
 
 // C Protos
 int readTurtle();
@@ -53,6 +58,7 @@ int readFpu();
 int closewin = FALSE;
 struct Window *myWindow;
 struct Gadget *myViewGadgets[MAXLABELS];
+struct Gadget* myTxtGadgets[1];
 
 void exitFunction()
 {
@@ -102,6 +108,42 @@ void fpuFunctionOff()
   readStates();
 }
 
+void ideFunctionSlow()
+{
+  Execute("Vcontrol ID=0", 0, 0);
+  *((volatile UWORD*)VREG_FASTIDE) = 0x0000;
+  printf("Ide set to SLOW\n");
+  readStates();
+}
+
+void ideFunctionFast()
+{
+  Execute("Vcontrol ID=1", 0, 0);
+  printf("Ide set to FAST\n");
+  readStates();
+}
+
+void ideFunctionFaster()
+{
+  Execute("Vcontrol ID=2", 0, 0);
+  printf("Ide set to Faster\n");
+  readStates();
+}
+
+void ideFunctionFastest()
+{
+  Execute("Vcontrol ID=3", 0, 0);
+  printf("Ide set to Fastest\n");
+  readStates();
+}
+
+void attnSet()
+{
+  Execute("forceattn_844f", 0, 0);
+  printf("forceattn_844f launched\n");
+  readStates();
+}
+
 void kickstartSelector()
 {
   struct FileRequester *request;
@@ -138,16 +180,16 @@ void kickstartSelector()
 }
 
 // Setup functions associated with buttons
-void (*sg_pBtnFunctions[MAXBUTTONS])() = {turtleFunctionOn, turtleFunctionOff, kickstartSelector, superscalarFunctionOn, superscalarFunctionOff, fpuFunctionOn, fpuFunctionOff, exitFunction};
+void (*sg_pBtnFunctions[MAXBUTTONS])() = {turtleFunctionOn, turtleFunctionOff, kickstartSelector, superscalarFunctionOn, superscalarFunctionOff, fpuFunctionOn, fpuFunctionOff, ideFunctionSlow, ideFunctionFast, ideFunctionFaster, ideFunctionFastest, attnSet, exitFunction};
 
 APTR visual;
 
 /* Type of gadgets to display */
-ULONG Gadgetkinds[MAXBUTTONS] = {BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND};
-ULONG GadgetViewkinds[MAXLABELS] = {STRING_KIND, STRING_KIND , STRING_KIND};
+ULONG Gadgetkinds[MAXBUTTONS] = {BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND};
+ULONG GadgetViewkinds[MAXLABELS] = {STRING_KIND, STRING_KIND , STRING_KIND, STRING_KIND, STRING_KIND, STRING_KIND,  STRING_KIND, STRING_KIND, STRING_KIND};
 
 struct TextAttr topaz8 = {
-    (STRPTR) "topaz.font", 6, 0, 1};
+    (STRPTR) "topaz.font", 2, 0, 1};
 
 /* Data for gadget structures */
 struct NewGadget Gadgetdata[MAXBUTTONS] = {
@@ -162,7 +204,15 @@ struct NewGadget Gadgetdata[MAXBUTTONS] = {
     10, 130, 172, 13, (UBYTE *)"Fpu ON", &topaz8, 6, PLACETEXT_IN, NULL, NULL,
     10, 150, 172, 13, (UBYTE *)"Fpu OFF", &topaz8, 7, PLACETEXT_IN, NULL, NULL,
 
-    WINDOW_WIDTH/2-54/2, 190, 54, 31, (UBYTE *)"Exit", &topaz8, 8, PLACETEXT_IN, NULL, NULL};
+    // Ide set sepeed
+    10, 170, 130, 13, (UBYTE *)"Vamp IDE slow", &topaz8, 8, PLACETEXT_IN, NULL, NULL,
+    140, 170, 130, 13, (UBYTE *)"Vamp IDE fast", &topaz8, 9, PLACETEXT_IN, NULL, NULL,
+    270, 170, 130, 13, (UBYTE *)"Vamp IDE faster", &topaz8, 10, PLACETEXT_IN, NULL, NULL,
+    400, 170, 130, 13, (UBYTE *)"Vamp IDE fastest", &topaz8, 11, PLACETEXT_IN, NULL, NULL,
+
+    10, 190, 172, 13, (UBYTE *)"Launch ForceATTN_844F", &topaz8, 12, PLACETEXT_IN, NULL, NULL,
+
+    WINDOW_WIDTH/2-54/2, 210, 54, 31, (UBYTE *)"Exit", &topaz8, 13, PLACETEXT_IN, NULL, NULL};
 
 struct NewGadget GadgetViewdata[MAXLABELS] = {
     190,
@@ -171,7 +221,7 @@ struct NewGadget GadgetViewdata[MAXLABELS] = {
     13,
     (UBYTE *)"Turtle mode State",
     &topaz8,
-    1,
+    12,
     PLACETEXT_IN,
     NULL,
     NULL,
@@ -182,7 +232,7 @@ struct NewGadget GadgetViewdata[MAXLABELS] = {
     13,
     (UBYTE *)"",
     &topaz8,
-    1,
+    13,
     PLACETEXT_IN,
     NULL,
     NULL,
@@ -193,10 +243,80 @@ struct NewGadget GadgetViewdata[MAXLABELS] = {
     13,
     (UBYTE *)"",
     &topaz8,
-    1,
+    14,
     PLACETEXT_IN,
     NULL,
     NULL,
+
+    380,
+    40,
+    200,
+    13,
+    (UBYTE *)"",
+    &topaz8,
+    15,
+    PLACETEXT_LEFT,
+    NULL,
+    NULL,
+
+    190,
+    60,
+    430,
+    13,
+    (UBYTE *)"",
+    &topaz8,
+    15,
+    PLACETEXT_LEFT,
+    NULL,
+    NULL,
+
+    190,
+    80,
+    430,
+    13,
+    (UBYTE *)"",
+    &topaz8,
+    15,
+    PLACETEXT_LEFT,
+    NULL,
+    NULL,
+
+    380,
+    100,
+    200,
+    13,
+    (UBYTE *)"",
+    &topaz8,
+    15,
+    PLACETEXT_LEFT,
+    NULL,
+    NULL,
+
+    380,
+    120,
+    200,
+    13,
+    (UBYTE *)"",
+    &topaz8,
+    15,
+    PLACETEXT_LEFT,
+    NULL,
+    NULL,
+
+    380,
+    140,
+    200,
+    13,
+    (UBYTE *)"",
+    &topaz8,
+    15,
+    PLACETEXT_LEFT,
+    NULL,
+    NULL,
+};
+
+struct NewGadget GadgetTxtdata[1] = {
+  390, 70, 172, 44, (UBYTE *)"Enable Turtle mode", &topaz8, 1, PLACETEXT_IN, NULL, NULL
 };
 
 /* Extra information for gadgets using Tags */
@@ -204,6 +324,16 @@ ULONG GadgetTags[] = {
     (GTST_MaxChars), 256, (TAG_DONE),
     (GTNM_Border), TRUE, (TAG_DONE),
     (TAG_DONE)};
+
+ULONG GadgetViewTags[] = {
+    (GTST_MaxChars), 256, (TAG_DONE),
+    (GTNM_Border), TRUE, (TAG_DONE),
+    (TAG_DONE)};
+
+  
+  ULONG txtTL[] = { GTTX_Border,TRUE,GTTX_Text,(ULONG)"lol",TAG_END};
+  ULONG *ggTL [] = { NULL,NULL,NULL,NULL};
+
 
 // Start main
 int main(void)
@@ -239,19 +369,23 @@ int main(void)
   for (i = 0; i < MAXBUTTONS; i++)
   {
     Gadgetdata[i].ng_VisualInfo = visual;
-    if (myGadgets[i] = gad1 = CreateGadgetA(Gadgetkinds[i], gad1, &Gadgetdata[i], (struct TagItem *)&GadgetTags[i]))
+    if (myGadgets[i] = gad1 = CreateGadgetA(Gadgetkinds[i], gad1, &Gadgetdata[i], (struct TagItem *)&GadgetTags[0]))
     {
-      printf("Gadget %d created.\n", i);
+      if (DEBUG) printf("Gadget %d created.\n", i);
     }
     else
-      printf("Failed to create gadget %d.\n", i);
+      if (DEBUG) printf("Failed to create gadget %d.\n", i);
   }
 
   for (i = 0; i < MAXLABELS; i++)
   {
     GadgetViewdata[i].ng_VisualInfo = visual;
-    myViewGadgets[i] = gad1 = CreateGadgetA(GadgetViewkinds[i], gad1, &GadgetViewdata[i], (struct TagItem *)&GadgetTags[i]);
+    struct TagItem* tags = (struct TagItem*)txtTL[i];
+    myViewGadgets[i] = gad1 = CreateGadgetA(GadgetViewkinds[i], gad1, &GadgetViewdata[i],NULL);
   }
+
+  //myTxtGadgets[i] = gad1 = CreateGadgetA(STRING_KIND, gad1, &GadgetTxtdata[0], (struct TagItem *)&GadgetTags[0]);
+  
 
   /* Open window and specify gadget list (glist) */
   myWindow = OpenWindowTags(NULL,
@@ -303,6 +437,7 @@ int main(void)
 
 void readStates()
 {
+
   int state = readTurtle();
   if (state)
     updateStrGad(myWindow, myViewGadgets[0], (UBYTE *)"Turtle disabled");
@@ -320,6 +455,118 @@ void readStates()
     updateStrGad(myWindow, myViewGadgets[2], (UBYTE *)"Fpu enabled");
   else
     updateStrGad(myWindow, myViewGadgets[2], (UBYTE *)"Fpu disabled");
+
+    char buf[300];
+    BPTR cpuMsg=0;
+    
+    Execute("VControl cpu >RAM:cpuinfo",0,0);
+    cpuMsg = Open("ram:cpuinfo",MODE_OLDFILE);
+    memset(buf,0,300);
+    Read( cpuMsg, buf, 200);
+    //printf(" #####\n%s\n#####",buf);
+    Close(cpuMsg);
+    DeleteFile("RAM:cpuinfo");
+    
+    char* ptr = buf;
+    while (*ptr && *ptr!='\n')
+    {
+      ptr++;
+    }
+
+    if (*ptr) ptr++;
+    while (*ptr && *ptr!='\n')
+    {
+      ptr++;
+    }
+
+    if (*ptr) ptr++;
+    char cpuinfo[100];
+    strcpy(cpuinfo,"");
+    while (*ptr && *ptr!='\n')
+    {
+      if (strlen(cpuinfo)<99) sprintf(cpuinfo,"%s%c",cpuinfo,*ptr);
+      ptr++;
+    }
+
+    updateStrGad(myWindow, myViewGadgets[3], cpuinfo);
+
+    if (*ptr) ptr++;
+    char fpuinfo[100];
+    strcpy(fpuinfo,"");
+    while (*ptr && *ptr!='\n')
+    {
+      if (strlen(fpuinfo)<99) sprintf(fpuinfo,"%s%c",fpuinfo,*ptr);
+      ptr++;
+    }
+
+    updateStrGad(myWindow, myViewGadgets[6], fpuinfo);
+
+    if (*ptr) ptr++;
+    char pcrinfo[100];
+    strcpy(pcrinfo,"");
+    while (*ptr && *ptr!='\n')
+    {
+      if (strlen(pcrinfo)<99) sprintf(pcrinfo,"%s%c",pcrinfo,*ptr);
+      ptr++;
+    }
+
+    updateStrGad(myWindow, myViewGadgets[5], pcrinfo);
+
+    if (*ptr) ptr++;
+    char vbrinfo[100];
+    strcpy(vbrinfo,"");
+    while (*ptr && *ptr!='\n')
+    {
+      if (strlen(vbrinfo)<99) sprintf(vbrinfo,"%s%c",vbrinfo,*ptr);
+      ptr++;
+    }
+
+    updateStrGad(myWindow, myViewGadgets[4], vbrinfo);
+
+    if (*ptr) ptr++;
+    char cacrinfo[100];
+    strcpy(cacrinfo,"");
+    while (*ptr && *ptr!='\n')
+    {
+      if (strlen(cacrinfo)<99) sprintf(cacrinfo,"%s%c",cacrinfo,*ptr);
+      ptr++;
+    }
+
+    updateStrGad(myWindow, myViewGadgets[7], cacrinfo);
+
+    Execute("VControl af >RAM:af",0,0);
+    cpuMsg = Open("ram:af",MODE_OLDFILE);
+    memset(buf,0,300);
+    Read( cpuMsg, buf, 200);
+    //printf(" #####\n%s\n#####",buf);
+    Close(cpuMsg);
+    DeleteFile("RAM:af");
+
+    char attninfo[100];
+    strcpy(attninfo,"");
+    ptr=buf;
+    while (*ptr && *ptr!='\n')
+    {
+      if (strlen(attninfo)<99) sprintf(attninfo,"%s%c",attninfo,*ptr);
+      ptr++;
+    }
+
+    updateStrGad(myWindow, myViewGadgets[8], attninfo);
+    //ActivateGadget(myViewGadgets[2], myWindow, NULL);
+    //GT_RefreshWindow(myWindow,NULL);
+
+  //Idespeed
+  /*UWORD ideSpeed = *((volatile UWORD*)VREG_FASTIDE);
+  printf("Ide speeed rilevata %d\n",*((volatile UWORD*)VREG_FASTIDE);*/
+  /*switch(*((volatile UWORD*)VREG_FASTIDE))
+  {
+    case 0x0000: updateStrGad(myWindow, myViewGadgets[3], (UBYTE *)"Ide speed: SLOW"); break;
+    case 0x4000: updateStrGad(myWindow, myViewGadgets[3], (UBYTE *)"Ide speed: FAST"); break;
+    case 0x8000: updateStrGad(myWindow, myViewGadgets[3], (UBYTE *)"Ide speed: FASTER"); break;
+    case 0xC000: updateStrGad(myWindow, myViewGadgets[3], (UBYTE *)"Ide speed: FASTEST"); break;
+    default : updateStrGad(myWindow, myViewGadgets[3], (UBYTE *)"Ide speed: UNKNOWN"); break;
+  }*/
+  
 }
 
 int readTurtle()
