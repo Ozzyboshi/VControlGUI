@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.
 #include <string.h>
 
 
-#define DEBUG 0
+//#define DEBUG 0
 
 #define WINDOW_WIDTH 640
 #define WINDOW_TITLE (unsigned int)"VControlGUI"
@@ -70,78 +70,100 @@ void exitFunction()
 void turtleFunctionOn()
 {
   Execute("Vcontrol TU=1", 0, 0);
+#ifdef DEBUG
   printf("Turtlemode Activated\n");
+#endif
   readStates();
 }
 
 void turtleFunctionOff()
 {
   Execute("Vcontrol TU=0", 0, 0);
+#ifdef DEBUG
   printf("Turtlemode Deactivated\n");
+#endif
   readStates();
 }
 
 void superscalarFunctionOn()
 {
   Execute("Vcontrol SS=1", 0, 0);
+#ifdef DEBUG
   printf("Superscalarmode Activated\n");
+#endif
   readStates();
 }
 
 void superscalarFunctionOff()
 {
   Execute("Vcontrol SS=0", 0, 0);
+#ifdef DEBUG
   printf("Superscalarmode Deactivated\n");
+#endif
   readStates();
 }
 
 void fpuFunctionOn()
 {
   Execute("Vcontrol FP=1", 0, 0);
+#ifdef DEBUG
   printf("FPU Activated\n");
+#endif
   readStates();
 }
 
 void fpuFunctionOff()
 {
   Execute("Vcontrol FP=0", 0, 0);
+#ifdef DEBUG
   printf("FPU Deactivated\n");
+#endif
   readStates();
 }
 
 void ideFunctionSlow()
 {
   Execute("Vcontrol ID=0", 0, 0);
-  *((volatile UWORD*)VREG_FASTIDE) = 0x0000;
+  //*((volatile UWORD*)VREG_FASTIDE) = 0x0000;
+#ifdef DEBUG
   printf("Ide set to SLOW\n");
+#endif
   readStates();
 }
 
 void ideFunctionFast()
 {
   Execute("Vcontrol ID=1", 0, 0);
+#ifdef DEBUG
   printf("Ide set to FAST\n");
+#endif
   readStates();
 }
 
 void ideFunctionFaster()
 {
   Execute("Vcontrol ID=2", 0, 0);
+#ifdef DEBUG
   printf("Ide set to Faster\n");
+#endif
   readStates();
 }
 
 void ideFunctionFastest()
 {
   Execute("Vcontrol ID=3", 0, 0);
+#ifdef DEBUG
   printf("Ide set to Fastest\n");
+#endif
   readStates();
 }
 
 void attnSet()
 {
   Execute("forceattn_844f", 0, 0);
+#ifdef DEBUG
   printf("forceattn_844f launched\n");
+#endif
   readStates();
 }
 
@@ -173,8 +195,9 @@ void kickstartSelector()
     if (fname[strlen(fname) - 1] != (UBYTE)58) /* Check for : */
       strcat(fname, "/");
     strcat(fname, request->rf_File);
-
+#ifdef DEBUG
     printf("Selected ###%s###\n", fname);
+#endif
 
     Execute(fname, 0, 0);
   }
@@ -220,7 +243,7 @@ struct NewGadget GadgetViewdata[MAXLABELS] = {
     40,
     172,
     13,
-    (UBYTE *)"Turtle mode State",
+    (UBYTE *)"",
     &topaz8,
     12,
     PLACETEXT_IN,
@@ -372,10 +395,16 @@ int main(void)
     Gadgetdata[i].ng_VisualInfo = visual;
     if (myGadgets[i] = gad1 = CreateGadgetA(Gadgetkinds[i], gad1, &Gadgetdata[i], (struct TagItem *)&GadgetTags[0]))
     {
-      if (DEBUG) printf("Gadget %d created.\n", i);
+      #ifdef DEBUG
+      printf("Gadget %d created.\n", i);
+      #endif
     }
     else
-      if (DEBUG) printf("Failed to create gadget %d.\n", i);
+    {
+      #ifdef DEBUG
+      printf("Failed to create gadget %d.\n", i);
+      #endif
+    }
   }
 
   for (i = 0; i < MAXLABELS; i++)
@@ -419,7 +448,9 @@ int main(void)
       UWORD gadgetid;
       gadAddr = (struct Gadget *)msg->IAddress;
       gadgetid = gadAddr->GadgetID;
+#ifdef DEBUG
       printf("\n------\n pressed %d\n", gadgetid);
+#endif
       (*sg_pBtnFunctions[gadgetid - 1])();
     }
   }
@@ -553,21 +584,6 @@ void readStates()
     }
 
     updateStrGad(myWindow, myViewGadgets[8], attninfo);
-    //ActivateGadget(myViewGadgets[2], myWindow, NULL);
-    //GT_RefreshWindow(myWindow,NULL);
-
-  //Idespeed
-  /*UWORD ideSpeed = *((volatile UWORD*)VREG_FASTIDE);
-  printf("Ide speeed rilevata %d\n",*((volatile UWORD*)VREG_FASTIDE);*/
-  /*switch(*((volatile UWORD*)VREG_FASTIDE))
-  {
-    case 0x0000: updateStrGad(myWindow, myViewGadgets[3], (UBYTE *)"Ide speed: SLOW"); break;
-    case 0x4000: updateStrGad(myWindow, myViewGadgets[3], (UBYTE *)"Ide speed: FAST"); break;
-    case 0x8000: updateStrGad(myWindow, myViewGadgets[3], (UBYTE *)"Ide speed: FASTER"); break;
-    case 0xC000: updateStrGad(myWindow, myViewGadgets[3], (UBYTE *)"Ide speed: FASTEST"); break;
-    default : updateStrGad(myWindow, myViewGadgets[3], (UBYTE *)"Ide speed: UNKNOWN"); break;
-  }*/
-  
 }
 
 int readTurtle()
