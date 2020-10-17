@@ -35,11 +35,12 @@ Boston, MA 02111-1307, USA.
 //#define DEBUG 0
 
 #define WINDOW_WIDTH 640
+#define WINDOW_HEIGHT 256
 #define WINDOW_TITLE (unsigned int)"VControlGUI"
 #define KICKSTART_PATH (unsigned int)"Devs:Kickstarts"
 
 #define MAXBUTTONS 13
-#define MAXLABELS 9
+#define MAXLABELS 10
 
 #define VREG_FASTIDE    0xdd1020
 
@@ -87,7 +88,7 @@ void turtleFunctionOff()
 
 void superscalarFunctionOn()
 {
-  Execute("Vcontrol SS=1", 0, 0);
+  Execute("Vcontrol <>NIL: SS=1", 0, 0);
 #ifdef DEBUG
   printf("Superscalarmode Activated\n");
 #endif
@@ -96,7 +97,7 @@ void superscalarFunctionOn()
 
 void superscalarFunctionOff()
 {
-  Execute("Vcontrol SS=0", 0, 0);
+  Execute("Vcontrol <>NIL: SS=0", 0, 0);
 #ifdef DEBUG
   printf("Superscalarmode Deactivated\n");
 #endif
@@ -210,23 +211,23 @@ APTR visual;
 
 /* Type of gadgets to display */
 ULONG Gadgetkinds[MAXBUTTONS] = {BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND, BUTTON_KIND};
-ULONG GadgetViewkinds[MAXLABELS] = {STRING_KIND, STRING_KIND , STRING_KIND, STRING_KIND, STRING_KIND, STRING_KIND,  STRING_KIND, STRING_KIND, STRING_KIND};
+ULONG GadgetViewkinds[MAXLABELS] = {STRING_KIND, STRING_KIND , STRING_KIND, STRING_KIND, STRING_KIND, STRING_KIND,  STRING_KIND, STRING_KIND, STRING_KIND, STRING_KIND};
 
 struct TextAttr topaz8 = {
     (STRPTR) "topaz.font", 2, 0, 1};
 
 /* Data for gadget structures */
 struct NewGadget Gadgetdata[MAXBUTTONS] = {
-    10, 30, 172, 13, (UBYTE *)"Enable Turtle mode", &topaz8, 1, PLACETEXT_IN, NULL, NULL,
-    10, 50, 172, 13, (UBYTE *)"Disable Turtle mode", &topaz8, 2, PLACETEXT_IN, NULL, NULL,
+    10, 30, 150, 13, (UBYTE *)"Turtle mode ON", &topaz8, 1, PLACETEXT_IN, NULL, NULL,
+    10, 50, 150, 13, (UBYTE *)"Disable Turtle OFF", &topaz8, 2, PLACETEXT_IN, NULL, NULL,
 
-    10, 70, 172, 13, (UBYTE *)"Kickstart", &topaz8, 3, PLACETEXT_IN, NULL, NULL,
+    10, 70, 150, 13, (UBYTE *)"Kickstart", &topaz8, 3, PLACETEXT_IN, NULL, NULL,
 
-    10, 90, 172, 13, (UBYTE *)"Superscalar ON", &topaz8, 4, PLACETEXT_IN, NULL, NULL,
-    10, 110, 172, 13, (UBYTE *)"Superscalar OFF", &topaz8, 5, PLACETEXT_IN, NULL, NULL,
+    10, 90, 150, 13, (UBYTE *)"Superscalar ON", &topaz8, 4, PLACETEXT_IN, NULL, NULL,
+    10, 110, 150, 13, (UBYTE *)"Superscalar OFF", &topaz8, 5, PLACETEXT_IN, NULL, NULL,
 
-    10, 130, 172, 13, (UBYTE *)"Fpu ON", &topaz8, 6, PLACETEXT_IN, NULL, NULL,
-    10, 150, 172, 13, (UBYTE *)"Fpu OFF", &topaz8, 7, PLACETEXT_IN, NULL, NULL,
+    10, 130, 150, 13, (UBYTE *)"Fpu ON", &topaz8, 6, PLACETEXT_IN, NULL, NULL,
+    10, 150, 150, 13, (UBYTE *)"Fpu OFF", &topaz8, 7, PLACETEXT_IN, NULL, NULL,
 
     // Ide set sepeed
     10, 170, 130, 13, (UBYTE *)"Vamp IDE slow", &topaz8, 8, PLACETEXT_IN, NULL, NULL,
@@ -236,10 +237,10 @@ struct NewGadget Gadgetdata[MAXBUTTONS] = {
 
     10, 190, 172, 13, (UBYTE *)"Launch ForceATTN_844F", &topaz8, 12, PLACETEXT_IN, NULL, NULL,
 
-    WINDOW_WIDTH/2-54/2, 210, 54, 31, (UBYTE *)"Exit", &topaz8, 13, PLACETEXT_IN, NULL, NULL};
+    WINDOW_WIDTH/2-54/2, 230, 54, 20, (UBYTE *)"Exit", &topaz8, 13, PLACETEXT_IN, NULL, NULL};
 
 struct NewGadget GadgetViewdata[MAXLABELS] = {
-    190,
+    170,
     40,
     172,
     13,
@@ -250,7 +251,7 @@ struct NewGadget GadgetViewdata[MAXLABELS] = {
     NULL,
     NULL,
 
-    190,
+    170,
     100,
     172,
     13,
@@ -261,7 +262,7 @@ struct NewGadget GadgetViewdata[MAXLABELS] = {
     NULL,
     NULL,
 
-    190,
+    170,
     140,
     172,
     13,
@@ -283,9 +284,9 @@ struct NewGadget GadgetViewdata[MAXLABELS] = {
     NULL,
     NULL,
 
-    190,
+    170,
     60,
-    430,
+    450,
     13,
     (UBYTE *)"",
     &topaz8,
@@ -294,9 +295,10 @@ struct NewGadget GadgetViewdata[MAXLABELS] = {
     NULL,
     NULL,
 
-    190,
+  // PCR
+    170,
     80,
-    430,
+    450,
     13,
     (UBYTE *)"",
     &topaz8,
@@ -335,6 +337,17 @@ struct NewGadget GadgetViewdata[MAXLABELS] = {
     &topaz8,
     15,
     PLACETEXT_LEFT,
+    NULL,
+    NULL,
+
+    170,
+    20,
+    430,
+    13,
+    (UBYTE *)"",
+    &topaz8,
+    12,
+    PLACETEXT_IN,
     NULL,
     NULL,
 };
@@ -420,7 +433,7 @@ int main(void)
   /* Open window and specify gadget list (glist) */
   myWindow = OpenWindowTags(NULL,
                             WA_Left, 10, WA_Top, 15,
-                            WA_Width, WINDOW_WIDTH, WA_Height, 250,
+                            WA_Width, WINDOW_WIDTH, WA_Height, WINDOW_HEIGHT,
                             WA_IDCMP, IDCMP_CLOSEWINDOW | IDCMP_GADGETUP,
                             WA_Flags, WFLG_SIZEGADGET | WFLG_DRAGBAR | WFLG_DEPTHGADGET | WFLG_CLOSEGADGET | WFLG_ACTIVATE | WFLG_SMART_REFRESH,
                             WA_Gadgets, (unsigned int)glist,
@@ -584,6 +597,19 @@ void readStates()
     }
 
     updateStrGad(myWindow, myViewGadgets[8], attninfo);
+
+    BPTR coreMsg=0;
+    
+    Execute("VControl CO >RAM:coreinfo",0,0);
+    coreMsg = Open("ram:coreinfo",MODE_OLDFILE);
+    memset(buf,0,300);
+    Read( coreMsg, buf, 200);
+    //printf(" #####\n%s\n#####",buf);
+    Close(coreMsg);
+    DeleteFile("RAM:coreinfo");
+    buf[strlen(buf)-1]=0;
+
+    updateStrGad(myWindow, myViewGadgets[9], buf);
 }
 
 int readTurtle()
